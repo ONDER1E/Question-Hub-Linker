@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Mix Master Hub</title>
+    <!-- KaTeX CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --primary: #2563eb;
+            --success: #16a34a;
+            --border-color: #e2e8f0;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 24px 12px;
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { margin: 0 0 6px 0; color: #0f172a; }
+
+        /* Sticky Navigation Bar */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            padding: 12px 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -4px rgba(0,0,0,0.05);
+        }
+
+        .part-nav {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            scrollbar-width: thin;
+        }
+        .part-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #334155;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .part-btn.active, .part-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .search-box { display: flex; gap: 10px; }
+        .search-box input {
+            flex: 1; padding: 10px 14px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 0.95rem; outline: none; background: #fff;
+        }
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        .feed-container { margin-top: 24px; }
+        .part-section { margin-bottom: 40px; }
+
+        .part-section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #334155;
+            margin: 20px 0 12px 4px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;
+        }
+        .q-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+        .btn-group { display: flex; gap: 8px; }
+        button {
+            border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600;
+            cursor: pointer; font-size: 0.875rem; transition: all 0.2s ease;
+        }
+        .btn-copy { background-color: #eff6ff; color: #1d4ed8; }
+        .btn-copy:hover { background-color: #dbeafe; }
+        .btn-reveal { background-color: #f0fdf4; color: var(--success); }
+        .btn-reveal:hover { background-color: #dcfce7; }
+        .math-display { font-size: 1.25rem; margin: 16px 0; overflow-x: auto; }
+        .solution-box {
+            display: none; background-color: #f8fafc; border-left: 4px solid var(--success);
+            padding: 16px; margin-top: 16px; border-radius: 0 8px 8px 0;
+        }
+        .solution-box h4 { margin: 0 0 12px 0; color: var(--success); }
+        .step { margin-bottom: 12px; }
+        .step-title { font-weight: 600; color: #334155; display: block; margin-bottom: 4px; }
+        
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: #fff;
+            padding: 10px 18px; border-radius: 6px; font-size: 0.9rem; display: none; z-index: 1000;
+        }
+        .status-msg {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-style: italic;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px dashed var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Integration Mix Master Hub</h1>
+        <p>Dynamic Interactive Study Hub</p>
+    </header>
+
+    <!-- Sticky Navigation & Search Bar -->
+    <div class="sticky-header">
+        <div class="part-nav" id="partNav"></div>
+        <div class="search-box">
+            <input type="text" id="searchInput" onkeyup="filterQuestions()" placeholder="Search question number (e.g. 1, 45, 120)...">
+        </div>
+    </div>
+
+    <!-- Main Feed Container -->
+    <div class="feed-container" id="feedContainer"></div>
+</div>
+
+<div id="toast" class="toast">Copied to clipboard!</div>
+
+<script>
+    let discoveredParts = [];
+    const moduleCache = {}; 
+    const loadedDOMState = {}; 
+    let lastScrollY = window.scrollY;
+
+    // Supports both old object format and new efficient tuple array format: [id, latex, stepsArray]
+    function parseAndValidateQuestionSet(data) {
+        if (!Array.isArray(data) || data.length === 0) return null;
+
+        const normalizedQuestions = [];
+
+        for (const item of data) {
+            let id, latex, steps;
+
+            if (Array.isArray(item) && item.length >= 3) {
+                id = item[0];
+                latex = item[1];
+                steps = item[2];
+            } else if (item && typeof item === 'object') {
+                id = item.id;
+                latex = item.latex;
+                steps = item.steps;
+            }
+
+            if (typeof id !== 'number' || typeof latex !== 'string' || !Array.isArray(steps)) {
+                return null;
+            }
+
+            const normalizedSteps = steps.map(s => {
+                if (Array.isArray(s) && s.length >= 2) {
+                    return { title: s[0], desc: s[1] };
+                } else if (s && typeof s === 'object' && typeof s.title === 'string' && typeof s.desc === 'string') {
+                    return { title: s.title, desc: s.desc };
+                }
+                return null;
+            });
+
+            if (normalizedSteps.includes(null)) return null;
+
+            normalizedQuestions.push({ id, latex, steps: normalizedSteps });
+        }
+
+        return normalizedQuestions;
+    }
+
+    // --- 3-Tier Resilient File Discovery Pipeline ---
+    async function discoverPartFiles() {
+        const feed = document.getElementById('feedContainer');
+        feed.innerHTML = `<div class="status-msg">Scanning working directory...</div>`;
+
+        discoveredParts = [];
+        let jsFiles = [];
+
+        // Tier 1: Try standard server directory index fetch
+        try {
+            const response = await fetch('./', { cache: 'no-store' });
+            if (response.ok) {
+                const htmlText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+                const links = doc.querySelectorAll('a');
+                
+                links.forEach(link => {
+                    let href = link.getAttribute('href');
+                    if (href) {
+                        try { href = decodeURIComponent(href); } catch(e) {}
+                        if (href.toLowerCase().endsWith('.js') && !href.toLowerCase().includes('index')) {
+                            const cleanName = href.split('/').pop();
+                            const cleanHref = './' + cleanName;
+                            if (!jsFiles.includes(cleanHref)) {
+                                jsFiles.push(cleanHref);
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('Directory listing fetch restricted.', e);
+        }
+
+        if (jsFiles.length > 0) {
+            await processAndLoadFiles(jsFiles);
+            return;
+        }
+
+        // Tier 2: Blazing-Fast Parallel Probing Backup
+        feed.innerHTML = `<div class="status-msg">Auto-scanning part files (Parallel Probing)...</div>`;
+        const maxScan = 50;
+        const promises = [];
+
+        for (let i = 1; i <= maxScan; i++) {
+            promises.push(checkAndImport(`./${i}.js`));
+            promises.push(checkAndImport(`./part${i}.js`));
+        }
+
+        const results = await Promise.all(promises);
+        const validModules = results.filter(Boolean);
+
+        if (validModules.length > 0) {
+            validModules.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+            validModules.forEach((mod, idx) => {
+                mod.index = idx + 1;
+                moduleCache[mod.index] = mod.data;
+                discoveredParts.push(mod);
+            });
+            finalizeDiscovery();
+            return;
+        }
+
+        // Tier 3: Modern Browser Folder Picker API Fallback (for file:// or strict CORS)
+        if (window.showDirectoryPicker) {
+            feed.innerHTML = `
+                <div class="status-msg" style="text-align: center;">
+                    <p style="margin-bottom: 12px; font-style: normal; color: #334155; font-weight: 600;">Automated directory scanning restricted by browser security policy.</p>
+                    <p style="margin-bottom: 16px; font-size: 0.9rem;">Click the button below to select your project folder:</p>
+                    <button onclick="pickFolderAndLoad()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2);">
+                        Select Project Folder
+                    </button>
+                </div>`;
+        } else {
+            feed.innerHTML = `<div class="status-msg">No valid question data files found. Please ensure you are running this via a local web server (like Live Server).</div>`;
+        }
+    }
+
+    async function checkAndImport(fileUrl) {
+        try {
+            const module = await import(fileUrl + '?v=' + Date.now());
+            const rawData = module.default || module.data;
+            const validatedData = parseAndValidateQuestionSet(rawData);
+            if (validatedData) {
+                const baseName = fileUrl.split('/').pop().replace(/\.js$/i, '');
+                return { fileName: fileUrl, name: baseName, data: validatedData };
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    async function processAndLoadFiles(jsFiles) {
+        jsFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+        jsFiles = [...new Set(jsFiles)];
+
+        for (const fileUrl of jsFiles) {
+            try {
+                const module = await import(fileUrl + '?v=' + Date.now());
+                const rawData = module.default || module.data;
+                const validatedData = parseAndValidateQuestionSet(rawData);
+                if (validatedData) {
+                    const baseName = fileUrl.split('/').pop().replace(/\.js$/i, '');
+                    discoveredParts.push({ fileName: fileUrl, name: baseName, data: validatedData });
+                }
+            } catch (err) {}
+        }
+
+        discoveredParts.forEach((part, idx) => {
+            part.index = idx + 1;
+            moduleCache[part.index] = part.data;
+        });
+
+        finalizeDiscovery();
+    }
+
+    async function pickFolderAndLoad() {
+        try {
+            const dirHandle = await window.showDirectoryPicker();
+            const jsFiles = [];
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.js') && !entry.name.toLowerCase().includes('index')) {
+                    jsFiles.push('./' + entry.name);
+                }
+            }
+            if (jsFiles.length === 0) {
+                alert('No .js files found in the selected folder.');
+                return;
+            }
+            jsFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+            discoveredParts = [];
+            for (const fileUrl of jsFiles) {
+                try {
+                    const module = await import(fileUrl + '?v=' + Date.now());
+                    const rawData = module.default || module.data;
+                    const validatedData = parseAndValidateQuestionSet(rawData);
+                    if (validatedData) {
+                        const baseName = fileUrl.split('/').pop().replace(/\.js$/i, '');
+                        discoveredParts.push({ fileName: fileUrl, name: baseName, data: validatedData });
+                    }
+                } catch(e) {}
+            }
+
+            discoveredParts.forEach((part, idx) => {
+                part.index = idx + 1;
+                moduleCache[part.index] = part.data;
+            });
+
+            finalizeDiscovery();
+        } catch (err) {
+            console.warn('Folder selection cancelled or failed', err);
+        }
+    }
+
+    function finalizeDiscovery() {
+        if (discoveredParts.length === 0) {
+            const feed = document.getElementById('feedContainer');
+            feed.innerHTML = `<div class="status-msg">No valid question data files found.</div>`;
+            return;
+        }
+
+        buildNavTabs();
+        buildFeedPlaceholders();
+        loadAndRenderPart(1);
+
+        window.removeEventListener('scroll', handleScrollPagination);
+        window.removeEventListener('scroll', updateActiveNavTabOnScroll);
+        window.addEventListener('scroll', handleScrollPagination, { passive: true });
+        window.addEventListener('scroll', updateActiveNavTabOnScroll, { passive: true });
+    }
+
+    function buildNavTabs() {
+        const nav = document.getElementById('partNav');
+        nav.innerHTML = '';
+        discoveredParts.forEach(part => {
+            const btn = document.createElement('button');
+            btn.className = `part-btn ${part.index === 1 ? 'active' : ''}`;
+            btn.id = `nav-btn-${part.index}`;
+            btn.textContent = part.name;
+            btn.onclick = () => jumpToPart(part.index);
+            nav.appendChild(btn);
+        });
+    }
+
+    function buildFeedPlaceholders() {
+        const feed = document.getElementById('feedContainer');
+        feed.innerHTML = '';
+
+        discoveredParts.forEach(part => {
+            const section = document.createElement('div');
+            section.className = 'part-section';
+            section.id = `part-section-${part.index}`;
+            section.innerHTML = `
+                <div class="part-section-title">${part.name}</div>
+                <div class="status-msg" id="content-${part.index}">Waiting to load ${part.name}...</div>
+            `;
+            feed.appendChild(section);
+        });
+    }
+
+    async function loadAndRenderPart(index) {
+        if (loadedDOMState[index]) return;
+        
+        const container = document.getElementById(`content-${index}`);
+        if (!container) return;
+
+        const partInfo = discoveredParts.find(p => p.index === index);
+        if (!partInfo) return;
+
+        const data = partInfo.data;
+        let cardsHTML = '';
+
+        data.forEach((q) => {
+            let stepsHTML = q.steps.map(s => `
+                <div class="step">
+                    <span class="step-title">${s.title}</span>
+                    <div>${s.desc}</div>
+                </div>
+            `).join('');
+
+            cardsHTML += `
+                <div class="card" id="q-${q.id}">
+                    <div class="card-header">
+                        <span class="q-title">Question ${q.id}</span>
+                        <div class="btn-group">
+                            <button class="btn-copy" onclick="copyLatex('${q.latex.replace(/\\/g, '\\\\')}')">Copy Question</button>
+                            <button class="btn-reveal" onclick="toggleSolution(${q.id}, this)">Reveal Spoiler / Method</button>
+                        </div>
+                    </div>
+                    <div class="math-display">\\[ ${q.latex} \\]</div>
+                    <div class="solution-box" id="sol-${q.id}">
+                        <h4>Step-by-Step Method</h4>
+                        ${stepsHTML}
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = cardsHTML;
+        loadedDOMState[index] = true;
+
+        renderMathInElement(container, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '\\[', right: '\\]', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+        });
+    }
+
+    function unloadPart(index) {
+        const container = document.getElementById(`content-${index}`);
+        if (!container || !loadedDOMState[index]) return;
+
+        const currentHeight = container.offsetHeight;
+        container.innerHTML = `<div style="height: ${currentHeight}px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-style: italic; background: #fff; border-radius: 12px; border: 1px dashed var(--border-color);">${discoveredParts.find(p=>p.index===index)?.name || 'Module'} cached in memory</div>`;
+        loadedDOMState[index] = false;
+    }
+
+    function handleScrollPagination() {
+        const currentScrollY = window.scrollY;
+        const scrollingDown = currentScrollY > lastScrollY;
+        lastScrollY = currentScrollY;
+
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const pageHeight = document.documentElement.scrollHeight;
+
+        if (scrollingDown) {
+            if (pageHeight - scrollPosition < 800) {
+                for (let i = 1; i <= discoveredParts.length; i++) {
+                    if (!loadedDOMState[i]) {
+                        loadAndRenderPart(i);
+                        break; 
+                    }
+                }
+            }
+        }
+
+        discoveredParts.forEach(part => {
+            const section = document.getElementById(`part-section-${part.index}`);
+            if (section && loadedDOMState[part.index]) {
+                const rect = section.getBoundingClientRect();
+                if (rect.bottom < -800 || rect.top > window.innerHeight + 800) {
+                    unloadPart(part.index);
+                }
+            }
+        });
+
+        discoveredParts.forEach(part => {
+            const section = document.getElementById(`part-section-${part.index}`);
+            if (section && !loadedDOMState[part.index]) {
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight + 800 && rect.bottom > -800) {
+                    loadAndRenderPart(part.index);
+                }
+            }
+        });
+    }
+
+    async function jumpToPart(index) {
+        for (let i = 1; i <= index; i++) {
+            if (!loadedDOMState[i]) {
+                await loadAndRenderPart(i);
+            }
+        }
+
+        const section = document.getElementById(`part-section-${index}`);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        updateActiveNavTab(index);
+    }
+
+    function updateActiveNavTab(index) {
+        document.querySelectorAll('.part-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.id === `nav-btn-${index}`);
+        });
+    }
+
+    function updateActiveNavTabOnScroll() {
+        discoveredParts.forEach(part => {
+            const sec = document.getElementById(`part-section-${part.index}`);
+            if (sec) {
+                const rect = sec.getBoundingClientRect();
+                if (rect.top <= 150 && rect.bottom >= 150) {
+                    updateActiveNavTab(part.index);
+                }
+            }
+        });
+    }
+
+    function toggleSolution(id, btn) {
+        const solBox = document.getElementById(`sol-${id}`);
+        if (solBox.style.display === 'block') {
+            solBox.style.display = 'none';
+            btn.textContent = 'Reveal Spoiler / Method';
+        } else {
+            solBox.style.display = 'block';
+            btn.textContent = 'Hide Spoiler';
+        }
+    }
+
+    function copyLatex(latexText) {
+        navigator.clipboard.writeText(latexText).then(() => {
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        });
+    }
+
+    async function filterQuestions() {
+        const input = document.getElementById('searchInput').value.trim();
+        if (!input) return;
+
+        const targetId = parseInt(input, 10);
+        if (isNaN(targetId)) return;
+
+        let targetCard = document.getElementById(`q-${targetId}`);
+        if (!targetCard) {
+            const targetPart = discoveredParts.find(p => p.data.some(q => q.id === targetId));
+            if (targetPart) {
+                for (let i = 1; i <= targetPart.index; i++) {
+                    if (!loadedDOMState[i]) {
+                        await loadAndRenderPart(i);
+                    }
+                }
+                targetCard = document.getElementById(`q-${targetId}`);
+            }
+        }
+
+        if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetCard.style.borderColor = 'var(--primary)';
+            targetCard.style.boxShadow = '0 0 12px rgba(37, 99, 235, 0.25)';
+            setTimeout(() => {
+                targetCard.style.borderColor = 'var(--border-color)';
+                targetCard.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+            }, 2500);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', discoverPartFiles);
+</script>
+
+</body>
+</html>
