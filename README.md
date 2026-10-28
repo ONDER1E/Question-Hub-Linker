@@ -25,8 +25,8 @@ my-study-hub/
 ├── index.html        # Master linker & scroll engine
 ├── convert.js        # Node.js utility to compress files into tuples
 ├── README.md         # Documentation
-├── 1.js              # Questions 1–50 (or part1.js)
-├── 2.js              # Questions 51–100 (or part2.js)
+├── 1.js              # Questions 1-50 (or part1.js)
+├── 2.js              # Questions 51-100 (or part2.js)
 └── ...
 
 ```

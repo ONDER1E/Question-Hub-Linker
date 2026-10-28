@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Integration Mix Master Hub</title>
-    <!-- KaTeX CSS & JS -->
+    <!-- Include KaTeX stylesheet and defer loading of scripts for performance -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
@@ -30,7 +30,7 @@
         header { text-align: center; margin-bottom: 20px; }
         header h1 { margin: 0 0 6px 0; color: #0f172a; }
 
-        /* Sticky Navigation Bar */
+        /* Sticky Navigation Bar container */
         .sticky-header {
             position: sticky;
             top: 0;
@@ -135,7 +135,7 @@
         <p>Dynamic Interactive Study Hub</p>
     </header>
 
-    <!-- Sticky Navigation & Search Bar -->
+    <!-- Sticky Navigation and Search Bar -->
     <div class="sticky-header">
         <div class="part-nav" id="partNav"></div>
         <div class="search-box">
@@ -155,7 +155,7 @@
     const loadedDOMState = {}; 
     let lastScrollY = window.scrollY;
 
-    // Supports both old object format and new efficient tuple array format: [id, latex, stepsArray]
+    // Validate and normalize question data supporting both legacy object formats and modern compact tuple formats
     function parseAndValidateQuestionSet(data) {
         if (!Array.isArray(data) || data.length === 0) return null;
 
@@ -195,7 +195,7 @@
         return normalizedQuestions;
     }
 
-    // --- Resilient File Discovery Pipeline ---
+    // Discover module files dynamically using server directory listing or sequential probing
     async function discoverPartFiles() {
         const feed = document.getElementById('feedContainer');
         feed.innerHTML = `<div class="status-msg">Scanning working directory...</div>`;
@@ -203,7 +203,7 @@
         discoveredParts = [];
         let jsFiles = [];
 
-        // Tier 1: Try standard server directory index fetch
+        // Attempt directory index fetch via standard HTTP server
         try {
             const response = await fetch('./', { cache: 'no-store' });
             if (response.ok) {
@@ -235,7 +235,7 @@
             return;
         }
 
-        // Tier 2: Dynamic Sequential Probing (tries 1.js/part1.js, 2.js/part2.js, etc. until file not found)
+        // Fallback to sequential file probing if directory listing is disabled
         feed.innerHTML = `<div class="status-msg">Auto-scanning part files sequentially...</div>`;
         const validModules = [];
         let i = 1;
@@ -250,7 +250,6 @@
                 validModules.push(mod);
                 i++;
             } else {
-                // Break out of loop as soon as neither format exists (file not found)
                 break;
             }
         }
@@ -266,7 +265,6 @@
             return;
         }
 
-        // Tier 3: Universal Folder Selection Fallback (Works on static files and servers)
         renderFolderSelectionFallback();
     }
 
@@ -277,7 +275,7 @@
                 <p style="margin-bottom: 12px; font-style: normal; color: #334155; font-weight: 600;">Automated directory scanning restricted by browser security policy.</p>
                 <p style="margin-bottom: 16px; font-size: 0.9rem;">Click the button below to select your project folder:</p>
                 
-                <!-- Hidden fallback file input supporting webkitdirectory -->
+                <!-- File input element supporting folder selection via webkitdirectory -->
                 <input type="file" id="fallbackFolderInput" webkitdirectory directory multiple style="display: none;" onchange="handleFallbackFilesSelected(this.files)">
                 
                 <button onclick="document.getElementById('fallbackFolderInput').click()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2);">
@@ -323,7 +321,7 @@
         finalizeDiscovery();
     }
 
-    // Handles fallback folder selection via standard webkitdirectory file input
+    // Process local files selected manually through the fallback folder input
     async function handleFallbackFilesSelected(files) {
         if (!files || files.length === 0) return;
 
@@ -471,6 +469,7 @@
         });
     }
 
+    // Unload off-screen modules to conserve browser memory
     function unloadPart(index) {
         const container = document.getElementById(`content-${index}`);
         if (!container || !loadedDOMState[index]) return;
@@ -480,6 +479,7 @@
         loadedDOMState[index] = false;
     }
 
+    // Handle lazy loading and unloading of sections as the user scrolls
     function handleScrollPagination() {
         const currentScrollY = window.scrollY;
         const scrollingDown = currentScrollY > lastScrollY;
@@ -571,6 +571,7 @@
         });
     }
 
+    // Filter and jump to specific question numbers via search input
     async function filterQuestions() {
         const input = document.getElementById('searchInput').value.trim();
         if (!input) return;
