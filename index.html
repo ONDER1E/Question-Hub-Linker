@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question Hub</title>
-    <!-- Include KaTeX stylesheet and defer loading of scripts for performance -->
+
+    <!-- KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
@@ -14,23 +15,52 @@
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-color: #1e293b;
+            --text-muted: #64748b;
             --primary: #2563eb;
             --success: #16a34a;
+            --success-bg: #f0fdf4;
             --border-color: #e2e8f0;
+            --shadow: 0 2px 4px rgba(0,0,0,0.04);
+            --header-shadow: 0 4px 6px -4px rgba(0,0,0,0.06);
+            --toast-bg: #0f172a;
+            --ctrl-bg: #ffffff;
+            --ctrl-border: #e2e8f0;
         }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --success-bg: #14532d;
+            --border-color: #334155;
+            --shadow: 0 2px 8px rgba(0,0,0,0.35);
+            --header-shadow: 0 4px 12px -4px rgba(0,0,0,0.45);
+            --toast-bg: #1e293b;
+            --ctrl-bg: #1e293b;
+            --ctrl-border: #475569;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 24px 12px;
+            padding: 24px 12px 90px;
             line-height: 1.6;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
-        .container { max-width: 900px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 20px; }
-        header h1 { margin: 0 0 6px 0; color: #0f172a; }
 
-        /* Sticky Navigation Bar container */
+        .container { max-width: 900px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { margin: 0 0 6px 0; color: var(--text-color); }
+        header p { color: var(--text-muted); margin: 0; }
+
         .sticky-header {
             position: sticky;
             top: 0;
@@ -38,7 +68,8 @@
             padding: 12px 0;
             z-index: 1000;
             border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -4px rgba(0,0,0,0.05);
+            box-shadow: var(--header-shadow);
+            transition: background-color 0.25s ease;
         }
 
         .part-nav {
@@ -49,14 +80,15 @@
             margin-bottom: 12px;
             scrollbar-width: thin;
         }
+
         .part-btn {
-            background: #e2e8f0;
+            background: var(--border-color);
             border: none;
             padding: 8px 14px;
             border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
-            color: #334155;
+            color: var(--text-color);
             white-space: nowrap;
             font-size: 0.85rem;
             transition: all 0.2s ease;
@@ -68,10 +100,20 @@
 
         .search-box { display: flex; gap: 10px; }
         .search-box input {
-            flex: 1; padding: 10px 14px; border: 1px solid var(--border-color);
-            border-radius: 8px; font-size: 0.95rem; outline: none; background: #fff;
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
 
         .feed-container { margin-top: 24px; }
         .part-section { margin-bottom: 40px; }
@@ -79,51 +121,132 @@
         .part-section-title {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #334155;
+            color: var(--text-color);
             margin: 20px 0 12px 4px;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 6px;
         }
 
         .card {
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .card.highlight {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+        }
+
         .card-header {
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
         }
+
         .q-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
         .btn-group { display: flex; gap: 8px; }
+
         button {
-            border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600;
-            cursor: pointer; font-size: 0.875rem; transition: all 0.2s ease;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
         }
-        .btn-copy { background-color: #eff6ff; color: #1d4ed8; }
-        .btn-copy:hover { background-color: #dbeafe; }
-        .btn-reveal { background-color: #f0fdf4; color: var(--success); }
-        .btn-reveal:hover { background-color: #dcfce7; }
+
+        .btn-copy {
+            background-color: color-mix(in srgb, var(--primary) 12%, transparent);
+            color: var(--primary);
+        }
+        .btn-copy:hover { background-color: color-mix(in srgb, var(--primary) 22%, transparent); }
+
+        .btn-reveal {
+            background-color: var(--success-bg);
+            color: var(--success);
+        }
+        .btn-reveal:hover { filter: brightness(1.1); }
+
         .math-display { font-size: 1.25rem; margin: 16px 0; overflow-x: auto; }
+
         .solution-box {
-            display: none; background-color: #f8fafc; border-left: 4px solid var(--success);
-            padding: 16px; margin-top: 16px; border-radius: 0 8px 8px 0;
+            display: none;
+            background-color: color-mix(in srgb, var(--bg-color) 70%, var(--card-bg));
+            border-left: 4px solid var(--success);
+            padding: 16px;
+            margin-top: 16px;
+            border-radius: 0 8px 8px 0;
         }
         .solution-box h4 { margin: 0 0 12px 0; color: var(--success); }
+
         .step { margin-bottom: 12px; }
-        .step-title { font-weight: 600; color: #334155; display: block; margin-bottom: 4px; }
-        
-        .toast {
-            position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: #fff;
-            padding: 10px 18px; border-radius: 6px; font-size: 0.9rem; display: none; z-index: 1000;
-        }
+        .step-title { font-weight: 600; color: var(--text-color); display: block; margin-bottom: 4px; }
+
         .status-msg {
             text-align: center;
             padding: 30px;
-            color: #64748b;
+            color: var(--text-muted);
             font-style: italic;
-            background: #fff;
+            background: var(--card-bg);
             border-radius: 12px;
             border: 1px dashed var(--border-color);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: var(--toast-bg);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Fixed bottom-right controls */
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1500;
+        }
+
+        .ctrl-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--ctrl-bg);
+            border: 1px solid var(--ctrl-border);
+            color: var(--text-color);
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.15s, background 0.2s;
+        }
+        .ctrl-btn:hover { transform: scale(1.08); }
+        .ctrl-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
     </style>
 </head>
@@ -135,117 +258,120 @@
         <p>Dynamic Interactive Study Hub</p>
     </header>
 
-    <!-- Sticky Navigation and Search Bar -->
     <div class="sticky-header">
         <div class="part-nav" id="partNav"></div>
         <div class="search-box">
-            <input type="text" id="searchInput" onkeyup="filterQuestions()" placeholder="Search question number (e.g. 1, 45, 120)...">
+            <input type="text" id="searchInput" placeholder="Search question number (e.g. 42)…">
         </div>
     </div>
 
-    <!-- Main Feed Container -->
     <div class="feed-container" id="feedContainer"></div>
 </div>
 
-<div id="toast" class="toast">Copied to clipboard!</div>
+<!-- Fixed bottom-right control panel -->
+<div class="control-panel">
+    <button id="themeToggle" class="ctrl-btn" title="Toggle dark mode">🌙</button>
+    <button id="fullSearchToggle" class="ctrl-btn" title="Enable full-content search (loads all modules)">🔍</button>
+</div>
+
+<div id="toast" class="toast">Copied!</div>
 
 <script>
+    // ====================== STATE ======================
     let discoveredParts = [];
-    const moduleCache = {}; 
-    const loadedDOMState = {}; 
+    const moduleCache = {};
+    const loadedDOMState = {};
     let lastScrollY = window.scrollY;
+    let fullSearchEnabled = false;
 
-    // Validate and normalize question data supporting both legacy object formats and modern compact tuple formats
+    // ====================== THEME ======================
+    function initTheme() {
+        const saved = localStorage.getItem('qh-theme') || 'dark';   // ← changed to 'dark'
+        applyTheme(saved);
+        document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('qh-theme', theme);
+    }
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+
+    // ====================== DATA VALIDATION ======================
     function parseAndValidateQuestionSet(data) {
         if (!Array.isArray(data) || data.length === 0) return null;
-
-        const normalizedQuestions = [];
-
+        const out = [];
         for (const item of data) {
             let id, latex, steps;
-
             if (Array.isArray(item) && item.length >= 3) {
-                id = item[0];
-                latex = item[1];
-                steps = item[2];
+                [id, latex, steps] = item;
             } else if (item && typeof item === 'object') {
-                id = item.id;
-                latex = item.latex;
-                steps = item.steps;
+                id = item.id; latex = item.latex; steps = item.steps;
             }
+            if (typeof id !== 'number' || typeof latex !== 'string' || !Array.isArray(steps)) return null;
 
-            if (typeof id !== 'number' || typeof latex !== 'string' || !Array.isArray(steps)) {
-                return null;
-            }
-
-            const normalizedSteps = steps.map(s => {
-                if (Array.isArray(s) && s.length >= 2) {
-                    return { title: s[0], desc: s[1] };
-                } else if (s && typeof s === 'object' && typeof s.title === 'string' && typeof s.desc === 'string') {
+            const normalised = steps.map(s => {
+                if (Array.isArray(s) && s.length >= 2) return { title: s[0], desc: s[1] };
+                if (s && typeof s === 'object' && typeof s.title === 'string' && typeof s.desc === 'string') {
                     return { title: s.title, desc: s.desc };
                 }
                 return null;
             });
-
-            if (normalizedSteps.includes(null)) return null;
-
-            normalizedQuestions.push({ id, latex, steps: normalizedSteps });
+            if (normalised.includes(null)) return null;
+            out.push({ id, latex, steps: normalised });
         }
-
-        return normalizedQuestions;
+        return out;
     }
 
-    // Discover module files dynamically using server directory listing or sequential probing
+    // ====================== DISCOVERY ======================
     async function discoverPartFiles() {
         const feed = document.getElementById('feedContainer');
-        feed.innerHTML = `<div class="status-msg">Scanning working directory...</div>`;
+        feed.innerHTML = `<div class="status-msg">Scanning working directory…</div>`;
 
         discoveredParts = [];
         let jsFiles = [];
 
-        // Attempt directory index fetch via standard HTTP server
+        // 1. Try directory listing
         try {
             const response = await fetch('./', { cache: 'no-store' });
             if (response.ok) {
                 const htmlText = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlText, 'text/html');
-                const links = doc.querySelectorAll('a');
-                
-                links.forEach(link => {
+                const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+                doc.querySelectorAll('a').forEach(link => {
                     let href = link.getAttribute('href');
-                    if (href) {
-                        try { href = decodeURIComponent(href); } catch(e) {}
-                        if (href.toLowerCase().endsWith('.js') && !href.toLowerCase().includes('index')) {
-                            const cleanName = href.split('/').pop();
-                            const cleanHref = './' + cleanName;
-                            if (!jsFiles.includes(cleanHref)) {
-                                jsFiles.push(cleanHref);
-                            }
-                        }
+                    if (!href) return;
+                    try { href = decodeURIComponent(href); } catch (_) {}
+                    if (href.toLowerCase().endsWith('.js') && !href.toLowerCase().includes('index')) {
+                        const cleanName = href.split('/').pop();
+                        const cleanHref = './' + cleanName;
+                        if (!jsFiles.includes(cleanHref)) jsFiles.push(cleanHref);
                     }
                 });
             }
         } catch (e) {
-            console.warn('Directory listing fetch restricted.', e);
+            console.warn('Directory listing restricted', e);
         }
 
         if (jsFiles.length > 0) {
             await processAndLoadFiles(jsFiles);
+            finalizeDiscovery();
             return;
         }
 
-        // Fallback to sequential file probing if directory listing is disabled
-        feed.innerHTML = `<div class="status-msg">Auto-scanning part files sequentially...</div>`;
+        // 2. Sequential probing (1.js / part1.js, 2.js / part2.js …)
+        feed.innerHTML = `<div class="status-msg">Auto-scanning part files sequentially…</div>`;
         const validModules = [];
         let i = 1;
-
         while (true) {
             let mod = await checkAndImport(`./${i}.js`);
-            if (!mod) {
-                mod = await checkAndImport(`./part${i}.js`);
-            }
-
+            if (!mod) mod = await checkAndImport(`./part${i}.js`);
             if (mod) {
                 validModules.push(mod);
                 i++;
@@ -255,7 +381,7 @@
         }
 
         if (validModules.length > 0) {
-            validModules.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+            validModules.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
             validModules.forEach((mod, idx) => {
                 mod.index = idx + 1;
                 moduleCache[mod.index] = mod.data;
@@ -265,119 +391,105 @@
             return;
         }
 
+        // 3. Folder picker fallback
         renderFolderSelectionFallback();
-    }
-
-    function renderFolderSelectionFallback() {
-        const feed = document.getElementById('feedContainer');
-        feed.innerHTML = `
-            <div class="status-msg" style="text-align: center;">
-                <p style="margin-bottom: 12px; font-style: normal; color: #334155; font-weight: 600;">Automated directory scanning restricted by browser security policy.</p>
-                <p style="margin-bottom: 16px; font-size: 0.9rem;">Click the button below to select your project folder:</p>
-                
-                <!-- File input element supporting folder selection via webkitdirectory -->
-                <input type="file" id="fallbackFolderInput" webkitdirectory directory multiple style="display: none;" onchange="handleFallbackFilesSelected(this.files)">
-                
-                <button onclick="document.getElementById('fallbackFolderInput').click()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2);">
-                    Browse Folder
-                </button>
-            </div>`;
     }
 
     async function checkAndImport(fileUrl) {
         try {
             const module = await import(fileUrl + '?v=' + Date.now());
-            const rawData = module.default || module.data;
-            const validatedData = parseAndValidateQuestionSet(rawData);
-            if (validatedData) {
+            const raw = module.default || module.data;
+            const validated = parseAndValidateQuestionSet(raw);
+            if (validated) {
                 const baseName = fileUrl.split('/').pop().replace(/\.js$/i, '');
-                return { fileName: fileUrl, name: baseName, data: validatedData };
+                return { fileName: fileUrl, name: baseName, data: validated };
             }
-        } catch (e) {}
+        } catch (_) {}
         return null;
     }
 
     async function processAndLoadFiles(jsFiles) {
-        jsFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-        jsFiles = [...new Set(jsFiles)];
-
+        jsFiles = [...new Set(jsFiles)].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
         for (const fileUrl of jsFiles) {
             try {
                 const module = await import(fileUrl + '?v=' + Date.now());
-                const rawData = module.default || module.data;
-                const validatedData = parseAndValidateQuestionSet(rawData);
-                if (validatedData) {
+                const raw = module.default || module.data;
+                const validated = parseAndValidateQuestionSet(raw);
+                if (validated) {
                     const baseName = fileUrl.split('/').pop().replace(/\.js$/i, '');
-                    discoveredParts.push({ fileName: fileUrl, name: baseName, data: validatedData });
+                    discoveredParts.push({ fileName: fileUrl, name: baseName, data: validated });
                 }
-            } catch (err) {}
+            } catch (_) {}
         }
-
         discoveredParts.forEach((part, idx) => {
             part.index = idx + 1;
             moduleCache[part.index] = part.data;
         });
-
-        finalizeDiscovery();
     }
 
-    // Process local files selected manually through the fallback folder input
-    async function handleFallbackFilesSelected(files) {
+    function renderFolderSelectionFallback() {
+        const feed = document.getElementById('feedContainer');
+        feed.innerHTML = `
+            <div class="status-msg" style="text-align:center;">
+                <p style="margin-bottom:12px;font-style:normal;color:var(--text-color);font-weight:600;">
+                    Automated scanning restricted by browser security.
+                </p>
+                <p style="margin-bottom:16px;font-size:0.9rem;">Select your project folder:</p>
+                <input type="file" id="fallbackFolderInput" webkitdirectory directory multiple
+                       style="display:none;" onchange="handleFallbackFiles(this.files)">
+                <button onclick="document.getElementById('fallbackFolderInput').click()"
+                        style="background:var(--primary);color:white;border:none;padding:10px 20px;
+                               border-radius:8px;font-weight:600;cursor:pointer;">
+                    Browse Folder
+                </button>
+            </div>`;
+    }
+
+    async function handleFallbackFiles(files) {
         if (!files || files.length === 0) return;
-
         discoveredParts = [];
-        const validFilesMap = new Map();
+        const map = new Map();
 
-        for (let file of files) {
-            const fileName = file.name;
-            if (fileName.toLowerCase().endsWith('.js') && !fileName.toLowerCase().includes('index')) {
-                try {
-                    const text = await file.text();
-                    const blob = new Blob([text], { type: 'application/javascript' });
-                    const blobUrl = URL.createObjectURL(blob);
-
-                    const module = await import(blobUrl);
-                    const rawData = module.default || module.data;
-                    const validatedData = parseAndValidateQuestionSet(rawData);
-                    
-                    if (validatedData) {
-                        const baseName = fileName.replace(/\.js$/i, '');
-                        validFilesMap.set(baseName, { fileName: fileName, name: baseName, data: validatedData });
-                    }
-                } catch (err) {
-                    console.warn(`Failed parsing fallback file: ${fileName}`, err);
+        for (const file of files) {
+            if (!file.name.toLowerCase().endsWith('.js') || file.name.toLowerCase().includes('index')) continue;
+            try {
+                const text = await file.text();
+                const blob = new Blob([text], { type: 'application/javascript' });
+                const url = URL.createObjectURL(blob);
+                const module = await import(url);
+                const raw = module.default || module.data;
+                const validated = parseAndValidateQuestionSet(raw);
+                if (validated) {
+                    const baseName = file.name.replace(/\.js$/i, '');
+                    map.set(baseName, { fileName: file.name, name: baseName, data: validated });
                 }
+            } catch (err) {
+                console.warn('Failed parsing', file.name, err);
             }
         }
 
-        const sortedKeys = Array.from(validFilesMap.keys()).sort((a, b) => 
-            a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
-        );
-
-        sortedKeys.forEach(key => {
-            discoveredParts.push(validFilesMap.get(key));
-        });
+        const keys = [...map.keys()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        keys.forEach(k => discoveredParts.push(map.get(k)));
 
         if (discoveredParts.length === 0) {
-            alert('No valid question data files (.js) found in the selected folder.');
+            alert('No valid question data files found.');
             renderFolderSelectionFallback();
             return;
         }
 
-        discoveredParts.forEach((part, idx) => {
-            part.index = idx + 1;
-            moduleCache[part.index] = part.data;
+        discoveredParts.forEach((p, i) => {
+            p.index = i + 1;
+            moduleCache[p.index] = p.data;
         });
-
         finalizeDiscovery();
     }
 
+    // ====================== RENDER / LOAD / UNLOAD ======================
     function finalizeDiscovery() {
         if (discoveredParts.length === 0) {
             renderFolderSelectionFallback();
             return;
         }
-
         buildNavTabs();
         buildFeedPlaceholders();
         loadAndRenderPart(1);
@@ -404,14 +516,13 @@
     function buildFeedPlaceholders() {
         const feed = document.getElementById('feedContainer');
         feed.innerHTML = '';
-
         discoveredParts.forEach(part => {
             const section = document.createElement('div');
             section.className = 'part-section';
             section.id = `part-section-${part.index}`;
             section.innerHTML = `
                 <div class="part-section-title">${part.name}</div>
-                <div class="status-msg" id="content-${part.index}">Waiting to load ${part.name}...</div>
+                <div class="status-msg" id="content-${part.index}">Waiting to load ${part.name}…</div>
             `;
             feed.appendChild(section);
         });
@@ -419,30 +530,29 @@
 
     async function loadAndRenderPart(index) {
         if (loadedDOMState[index]) return;
-        
         const container = document.getElementById(`content-${index}`);
         if (!container) return;
 
         const partInfo = discoveredParts.find(p => p.index === index);
         if (!partInfo) return;
 
-        const data = partInfo.data;
-        let cardsHTML = '';
-
-        data.forEach((q) => {
-            let stepsHTML = q.steps.map(s => `
+        let html = '';
+        partInfo.data.forEach(q => {
+            const stepsHTML = q.steps.map(s => `
                 <div class="step">
                     <span class="step-title">${s.title}</span>
                     <div>${s.desc}</div>
                 </div>
             `).join('');
 
-            cardsHTML += `
-                <div class="card" id="q-${q.id}">
+            const safeLatex = q.latex.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+            html += `
+                <div class="card" id="q-${q.id}" data-qid="${q.id}">
                     <div class="card-header">
                         <span class="q-title">Question ${q.id}</span>
                         <div class="btn-group">
-                            <button class="btn-copy" onclick="copyLatex('${q.latex.replace(/\\/g, '\\\\')}')">Copy Question</button>
+                            <button class="btn-copy" onclick="copyLatex('${safeLatex}')">Copy Question</button>
                             <button class="btn-reveal" onclick="toggleSolution(${q.id}, this)">Reveal Spoiler / Method</button>
                         </div>
                     </div>
@@ -455,82 +565,49 @@
             `;
         });
 
-        container.innerHTML = cardsHTML;
+        container.innerHTML = html;
         loadedDOMState[index] = true;
 
-        renderMathInElement(container, {
-            delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '\\[', right: '\\]', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\(', right: '\\)', display: false}
-            ],
-            throwOnError: false
-        });
+        if (window.renderMathInElement) {
+            renderMathInElement(container, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\(', right: '\\)', display: false }
+                ],
+                throwOnError: false
+            });
+        }
     }
 
-    // Unload off-screen modules to conserve browser memory
     function unloadPart(index) {
         const container = document.getElementById(`content-${index}`);
         if (!container || !loadedDOMState[index]) return;
 
-        const currentHeight = container.offsetHeight;
-        container.innerHTML = `<div style="height: ${currentHeight}px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-style: italic; background: #fff; border-radius: 12px; border: 1px dashed var(--border-color);">${discoveredParts.find(p=>p.index===index)?.name || 'Module'} cached in memory</div>`;
+        const height = container.offsetHeight;
+        const name = discoveredParts.find(p => p.index === index)?.name || 'Module';
+        container.innerHTML = `
+            <div style="height:${height}px;display:flex;align-items:center;justify-content:center;
+                        color:var(--text-muted);font-style:italic;background:var(--card-bg);
+                        border-radius:12px;border:1px dashed var(--border-color);">
+                ${name} cached (unloaded to save memory)
+            </div>`;
         loadedDOMState[index] = false;
     }
 
-    // Handle lazy loading and unloading of sections as the user scrolls
-    function handleScrollPagination() {
-        const currentScrollY = window.scrollY;
-        const scrollingDown = currentScrollY > lastScrollY;
-        lastScrollY = currentScrollY;
-
-        const scrollPosition = window.innerHeight + window.scrollY;
-        const pageHeight = document.documentElement.scrollHeight;
-
-        if (scrollingDown) {
-            if (pageHeight - scrollPosition < 800) {
-                for (let i = 1; i <= discoveredParts.length; i++) {
-                    if (!loadedDOMState[i]) {
-                        loadAndRenderPart(i);
-                        break; 
-                    }
-                }
-            }
+    async function forceLoadAll() {
+        for (let i = 1; i <= discoveredParts.length; i++) {
+            if (!loadedDOMState[i]) await loadAndRenderPart(i);
         }
-
-        discoveredParts.forEach(part => {
-            const section = document.getElementById(`part-section-${part.index}`);
-            if (section && loadedDOMState[part.index]) {
-                const rect = section.getBoundingClientRect();
-                if (rect.bottom < -800 || rect.top > window.innerHeight + 800) {
-                    unloadPart(part.index);
-                }
-            }
-        });
-
-        discoveredParts.forEach(part => {
-            const section = document.getElementById(`part-section-${part.index}`);
-            if (section && !loadedDOMState[part.index]) {
-                const rect = section.getBoundingClientRect();
-                if (rect.top < window.innerHeight + 800 && rect.bottom > -800) {
-                    loadAndRenderPart(part.index);
-                }
-            }
-        });
     }
 
     async function jumpToPart(index) {
         for (let i = 1; i <= index; i++) {
-            if (!loadedDOMState[i]) {
-                await loadAndRenderPart(i);
-            }
+            if (!loadedDOMState[i]) await loadAndRenderPart(i);
         }
-
         const section = document.getElementById(`part-section-${index}`);
-        if (section) {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
         updateActiveNavTab(index);
     }
 
@@ -543,68 +620,168 @@
     function updateActiveNavTabOnScroll() {
         discoveredParts.forEach(part => {
             const sec = document.getElementById(`part-section-${part.index}`);
-            if (sec) {
-                const rect = sec.getBoundingClientRect();
-                if (rect.top <= 150 && rect.bottom >= 150) {
-                    updateActiveNavTab(part.index);
-                }
+            if (!sec) return;
+            const rect = sec.getBoundingClientRect();
+            if (rect.top <= 150 && rect.bottom >= 150) {
+                updateActiveNavTab(part.index);
             }
         });
     }
 
+    // ====================== SCROLL ENGINE ======================
+    function handleScrollPagination() {
+        const currentY = window.scrollY;
+        const scrollingDown = currentY > lastScrollY;
+        lastScrollY = currentY;
+
+        const viewBottom = window.innerHeight + currentY;
+        const pageHeight = document.documentElement.scrollHeight;
+        const BUFFER = 900;
+
+        if (scrollingDown && pageHeight - viewBottom < BUFFER) {
+            for (let i = 1; i <= discoveredParts.length; i++) {
+                if (!loadedDOMState[i]) {
+                    loadAndRenderPart(i);
+                    break;
+                }
+            }
+        }
+
+        discoveredParts.forEach(part => {
+            const section = document.getElementById(`part-section-${part.index}`);
+            if (!section) return;
+            const rect = section.getBoundingClientRect();
+            const farAbove = rect.bottom < -BUFFER;
+            const farBelow = rect.top > window.innerHeight + BUFFER;
+
+            if (loadedDOMState[part.index] && (farAbove || farBelow)) {
+                if (!fullSearchEnabled) unloadPart(part.index);
+            } else if (!loadedDOMState[part.index] && !farAbove && !farBelow) {
+                loadAndRenderPart(part.index);
+            }
+        });
+    }
+
+    // ====================== SEARCH ======================
+    function initSearch() {
+        const input = document.getElementById('searchInput');
+        const toggle = document.getElementById('fullSearchToggle');
+
+        toggle.addEventListener('click', async () => {
+            fullSearchEnabled = !fullSearchEnabled;
+            toggle.classList.toggle('active', fullSearchEnabled);
+            toggle.title = fullSearchEnabled
+                ? 'Full-content search ON (all modules loaded)'
+                : 'Enable full-content search (loads all modules)';
+
+            if (fullSearchEnabled) {
+                input.placeholder = 'Search number or any text inside questions…';
+                await forceLoadAll();
+                showToast('All modules loaded – full text search ready');
+            } else {
+                input.placeholder = 'Search question number (e.g. 42)…';
+            }
+        });
+
+        input.addEventListener('keyup', debounce(handleSearch, 180));
+    }
+
+    async function handleSearch() {
+        const raw = document.getElementById('searchInput').value.trim();
+        if (!raw) {
+            clearHighlights();
+            return;
+        }
+
+        const asNum = parseInt(raw, 10);
+        if (!isNaN(asNum) && String(asNum) === raw) {
+            await jumpToQuestion(asNum);
+            return;
+        }
+
+        if (!fullSearchEnabled) {
+            showToast('Turn on Full Content Search (🔍) to search text');
+            return;
+        }
+
+        clearHighlights();
+        const query = raw.toLowerCase();
+        let firstMatch = null;
+
+        document.querySelectorAll('.card').forEach(card => {
+            if (card.textContent.toLowerCase().includes(query)) {
+                card.classList.add('highlight');
+                if (!firstMatch) firstMatch = card;
+            }
+        });
+
+        if (firstMatch) {
+            firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            showToast('No matches found');
+        }
+    }
+
+    async function jumpToQuestion(id) {
+        let card = document.getElementById(`q-${id}`);
+        if (!card) {
+            const part = discoveredParts.find(p => p.data.some(q => q.id === id));
+            if (part) {
+                for (let i = 1; i <= part.index; i++) {
+                    if (!loadedDOMState[i]) await loadAndRenderPart(i);
+                }
+                card = document.getElementById(`q-${id}`);
+            }
+        }
+        if (card) {
+            clearHighlights();
+            card.classList.add('highlight');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => card.classList.remove('highlight'), 2500);
+        }
+    }
+
+    function clearHighlights() {
+        document.querySelectorAll('.card.highlight').forEach(c => c.classList.remove('highlight'));
+    }
+
+    // ====================== HELPERS ======================
     function toggleSolution(id, btn) {
-        const solBox = document.getElementById(`sol-${id}`);
-        if (solBox.style.display === 'block') {
-            solBox.style.display = 'none';
+        const box = document.getElementById(`sol-${id}`);
+        if (box.style.display === 'block') {
+            box.style.display = 'none';
             btn.textContent = 'Reveal Spoiler / Method';
         } else {
-            solBox.style.display = 'block';
+            box.style.display = 'block';
             btn.textContent = 'Hide Spoiler';
         }
     }
 
-    function copyLatex(latexText) {
-        navigator.clipboard.writeText(latexText).then(() => {
-            const toast = document.getElementById('toast');
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2000);
-        });
+    function copyLatex(latex) {
+        navigator.clipboard.writeText(latex).then(() => showToast('Copied to clipboard!'));
     }
 
-    // Filter and jump to specific question numbers via search input
-    async function filterQuestions() {
-        const input = document.getElementById('searchInput').value.trim();
-        if (!input) return;
-
-        const targetId = parseInt(input, 10);
-        if (isNaN(targetId)) return;
-
-        let targetCard = document.getElementById(`q-${targetId}`);
-        if (!targetCard) {
-            const targetPart = discoveredParts.find(p => p.data.some(q => q.id === targetId));
-            if (targetPart) {
-                for (let i = 1; i <= targetPart.index; i++) {
-                    if (!loadedDOMState[i]) {
-                        await loadAndRenderPart(i);
-                    }
-                }
-                targetCard = document.getElementById(`q-${targetId}`);
-            }
-        }
-
-        if (targetCard) {
-            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            targetCard.style.borderColor = 'var(--primary)';
-            targetCard.style.boxShadow = '0 0 12px rgba(37, 99, 235, 0.25)';
-            setTimeout(() => {
-                targetCard.style.borderColor = 'var(--border-color)';
-                targetCard.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
-            }, 2500);
-        }
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2200);
     }
 
-    document.addEventListener('DOMContentLoaded', discoverPartFiles);
+    function debounce(fn, ms) {
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), ms);
+        };
+    }
+
+    // ====================== BOOT ======================
+    document.addEventListener('DOMContentLoaded', () => {
+        initTheme();
+        initSearch();
+        discoverPartFiles();
+    });
 </script>
-
 </body>
 </html>
