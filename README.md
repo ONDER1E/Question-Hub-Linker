@@ -127,22 +127,6 @@ Rules:
 
 ---
 
-## 🔄 Converting Legacy Files to Tuples
-
-If you have legacy object-based part files, you can automatically convert them to the compact tuple format using the provided Node.js script (`convert.js`):
-
-1. Save the conversion script as `convert.js` in your project folder.
-2. Run the command in your terminal:
-```bash
-node convert.js
-
-```
-
-
-3. The script will automatically scan, parse, convert, and overwrite your `.js` files into the compressed tuple format.
-
----
-
 ## 🚀 How to Run (Desktop)
 
 Because modern browsers restrict ES Module imports (`import()`) over the `file://` protocol due to CORS policy, run the hub using any simple static web server:

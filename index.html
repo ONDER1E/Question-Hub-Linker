@@ -195,7 +195,7 @@
         return normalizedQuestions;
     }
 
-    // --- 3-Tier Resilient File Discovery Pipeline ---
+    // --- Resilient File Discovery Pipeline ---
     async function discoverPartFiles() {
         const feed = document.getElementById('feedContainer');
         feed.innerHTML = `<div class="status-msg">Scanning working directory...</div>`;
@@ -235,18 +235,25 @@
             return;
         }
 
-        // Tier 2: Blazing-Fast Parallel Probing Backup
-        feed.innerHTML = `<div class="status-msg">Auto-scanning part files (Parallel Probing)...</div>`;
-        const maxScan = 50;
-        const promises = [];
+        // Tier 2: Dynamic Sequential Probing (tries 1.js/part1.js, 2.js/part2.js, etc. until file not found)
+        feed.innerHTML = `<div class="status-msg">Auto-scanning part files sequentially...</div>`;
+        const validModules = [];
+        let i = 1;
 
-        for (let i = 1; i <= maxScan; i++) {
-            promises.push(checkAndImport(`./${i}.js`));
-            promises.push(checkAndImport(`./part${i}.js`));
+        while (true) {
+            let mod = await checkAndImport(`./${i}.js`);
+            if (!mod) {
+                mod = await checkAndImport(`./part${i}.js`);
+            }
+
+            if (mod) {
+                validModules.push(mod);
+                i++;
+            } else {
+                // Break out of loop as soon as neither format exists (file not found)
+                break;
+            }
         }
-
-        const results = await Promise.all(promises);
-        const validModules = results.filter(Boolean);
 
         if (validModules.length > 0) {
             validModules.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
@@ -259,19 +266,24 @@
             return;
         }
 
-        // Tier 3: Modern Browser Folder Picker API Fallback (for file:// or strict CORS)
-        if (window.showDirectoryPicker) {
-            feed.innerHTML = `
-                <div class="status-msg" style="text-align: center;">
-                    <p style="margin-bottom: 12px; font-style: normal; color: #334155; font-weight: 600;">Automated directory scanning restricted by browser security policy.</p>
-                    <p style="margin-bottom: 16px; font-size: 0.9rem;">Click the button below to select your project folder:</p>
-                    <button onclick="pickFolderAndLoad()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2);">
-                        Select Project Folder
-                    </button>
-                </div>`;
-        } else {
-            feed.innerHTML = `<div class="status-msg">No valid question data files found. Please ensure you are running this via a local web server (like Live Server).</div>`;
-        }
+        // Tier 3: Universal Folder Selection Fallback (Works on static files and servers)
+        renderFolderSelectionFallback();
+    }
+
+    function renderFolderSelectionFallback() {
+        const feed = document.getElementById('feedContainer');
+        feed.innerHTML = `
+            <div class="status-msg" style="text-align: center;">
+                <p style="margin-bottom: 12px; font-style: normal; color: #334155; font-weight: 600;">Automated directory scanning restricted by browser security policy.</p>
+                <p style="margin-bottom: 16px; font-size: 0.9rem;">Click the button below to select your project folder:</p>
+                
+                <!-- Hidden fallback file input supporting webkitdirectory -->
+                <input type="file" id="fallbackFolderInput" webkitdirectory directory multiple style="display: none;" onchange="handleFallbackFilesSelected(this.files)">
+                
+                <button onclick="document.getElementById('fallbackFolderInput').click()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2);">
+                    Browse Folder
+                </button>
+            </div>`;
     }
 
     async function checkAndImport(fileUrl) {
@@ -311,49 +323,60 @@
         finalizeDiscovery();
     }
 
-    async function pickFolderAndLoad() {
-        try {
-            const dirHandle = await window.showDirectoryPicker();
-            const jsFiles = [];
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.js') && !entry.name.toLowerCase().includes('index')) {
-                    jsFiles.push('./' + entry.name);
-                }
-            }
-            if (jsFiles.length === 0) {
-                alert('No .js files found in the selected folder.');
-                return;
-            }
-            jsFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+    // Handles fallback folder selection via standard webkitdirectory file input
+    async function handleFallbackFilesSelected(files) {
+        if (!files || files.length === 0) return;
 
-            discoveredParts = [];
-            for (const fileUrl of jsFiles) {
+        discoveredParts = [];
+        const validFilesMap = new Map();
+
+        for (let file of files) {
+            const fileName = file.name;
+            if (fileName.toLowerCase().endsWith('.js') && !fileName.toLowerCase().includes('index')) {
                 try {
-                    const module = await import(fileUrl + '?v=' + Date.now());
+                    const text = await file.text();
+                    const blob = new Blob([text], { type: 'application/javascript' });
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    const module = await import(blobUrl);
                     const rawData = module.default || module.data;
                     const validatedData = parseAndValidateQuestionSet(rawData);
+                    
                     if (validatedData) {
-                        const baseName = fileUrl.split('/').pop().replace(/\.js$/i, '');
-                        discoveredParts.push({ fileName: fileUrl, name: baseName, data: validatedData });
+                        const baseName = fileName.replace(/\.js$/i, '');
+                        validFilesMap.set(baseName, { fileName: fileName, name: baseName, data: validatedData });
                     }
-                } catch(e) {}
+                } catch (err) {
+                    console.warn(`Failed parsing fallback file: ${fileName}`, err);
+                }
             }
-
-            discoveredParts.forEach((part, idx) => {
-                part.index = idx + 1;
-                moduleCache[part.index] = part.data;
-            });
-
-            finalizeDiscovery();
-        } catch (err) {
-            console.warn('Folder selection cancelled or failed', err);
         }
+
+        const sortedKeys = Array.from(validFilesMap.keys()).sort((a, b) => 
+            a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+        );
+
+        sortedKeys.forEach(key => {
+            discoveredParts.push(validFilesMap.get(key));
+        });
+
+        if (discoveredParts.length === 0) {
+            alert('No valid question data files (.js) found in the selected folder.');
+            renderFolderSelectionFallback();
+            return;
+        }
+
+        discoveredParts.forEach((part, idx) => {
+            part.index = idx + 1;
+            moduleCache[part.index] = part.data;
+        });
+
+        finalizeDiscovery();
     }
 
     function finalizeDiscovery() {
         if (discoveredParts.length === 0) {
-            const feed = document.getElementById('feedContainer');
-            feed.innerHTML = `<div class="status-msg">No valid question data files found.</div>`;
+            renderFolderSelectionFallback();
             return;
         }
 
