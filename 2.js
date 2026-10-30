@@ -123,7 +123,7 @@ export default [
             ],
             [
                 "Step 2: Apply formula",
-                "\\[ = -\\frac{1}{3}x\\cos 3x - \\int \\left(-\\frac{1}{3}\\cos 3x\\) dx = -\\frac{1}{3}x\\cos 3x + \\frac{1}{9}\\sin 3x + C \\]"
+                "\\[ = -\\frac{1}{3}x\\cos 3x - \\int \\left(-\\frac{1}{3}\\cos 3x\\right) dx = -\\frac{1}{3}x\\cos 3x + \\frac{1}{9}\\sin 3x + C \\]"
             ]
         ]
     ],
